@@ -7,9 +7,17 @@ import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.scene.paint.Color;
+import sanavesa.model.versionControl.ICommand;
+import sanavesa.model.versionControl.VersionControl;
 
 public final class Pixel
 {
+	@Override
+	public String toString()
+	{
+		return "(" + getX() + "," + getY() + ")";
+	}
+	
 	private final ReadOnlyIntegerWrapper x;
 	private final ReadOnlyIntegerWrapper y;
 	private final ReadOnlyObjectWrapper<Layer> layer;
@@ -17,8 +25,11 @@ public final class Pixel
 	
 	public Pixel(int x, int y, Layer layer, double brightnessFactor)
 	{
+		if(layer == null)
+			throw new IllegalArgumentException("layer cannot be null");
+		
 		this.x = new ReadOnlyIntegerWrapper(x);
-		this.y = new ReadOnlyIntegerWrapper(x);
+		this.y = new ReadOnlyIntegerWrapper(y);
 		this.layer = new ReadOnlyObjectWrapper<>(layer);
 		this.brightnessFactor = new ReadOnlyDoubleWrapper(brightnessFactor);
 	}
@@ -30,7 +41,20 @@ public final class Pixel
 	
 	public final void setX(int newX)
 	{
-		x.set(newX);
+		setX(newX, true);
+	}
+	
+	public final void setX(int newX, boolean isUndoable)
+	{
+		if(isUndoable)
+		{
+			PixelXCommand command = new PixelXCommand(this, newX);
+			VersionControl.getInstance().executeCommand(command);
+		}
+		else
+		{
+			x.set(newX);
+		}
 	}
 
 	public final ReadOnlyIntegerProperty xProperty()
@@ -45,7 +69,20 @@ public final class Pixel
 	
 	public final void setY(int newY)
 	{
-		y.set(newY);
+		setY(newY, true);
+	}
+	
+	public final void setY(int newY, boolean isUndoable)
+	{
+		if(isUndoable)
+		{
+			PixelYCommand command = new PixelYCommand(this, newY);
+			VersionControl.getInstance().executeCommand(command);
+		}
+		else
+		{
+			y.set(newY);
+		}
 	}
 
 	public final ReadOnlyIntegerProperty yProperty()
@@ -60,7 +97,23 @@ public final class Pixel
 	
 	public final void setLayer(Layer newLayer)
 	{
-		layer.set(newLayer);
+		setLayer(newLayer, true);
+	}
+	
+	public final void setLayer(Layer newLayer, boolean isUndoable)
+	{
+		if(newLayer == null)
+			throw new IllegalArgumentException("newLayer cannot be null");
+		
+		if(isUndoable)
+		{
+			PixelLayerCommand command = new PixelLayerCommand(this, newLayer);
+			VersionControl.getInstance().executeCommand(command);
+		}
+		else
+		{
+			layer.set(newLayer);
+		}
 	}
 
 	public final ReadOnlyObjectProperty<Layer> layerProperty()
@@ -75,7 +128,20 @@ public final class Pixel
 	
 	public final void setBrightnessFactor(double newBrightnessFactor)
 	{
-		brightnessFactor.set(newBrightnessFactor);
+		setBrightnessFactor(newBrightnessFactor, true);
+	}
+	
+	public final void setBrightnessFactor(double newBrightnessFactor, boolean isUndoable)
+	{
+		if(isUndoable)
+		{
+			PixelBrightnessFactorCommand command = new PixelBrightnessFactorCommand(this, newBrightnessFactor);
+			VersionControl.getInstance().executeCommand(command);
+		}
+		else
+		{
+			brightnessFactor.set(newBrightnessFactor);
+		}
 	}
 
 	public final ReadOnlyDoubleProperty brightnessFactorProperty()
@@ -113,5 +179,109 @@ public final class Pixel
 		}
 		
 		return computedColor;
+	}
+	
+	private final class PixelXCommand implements ICommand
+	{
+		private final Pixel pixel;
+		private final int newX;
+		private int oldX;
+		
+		public PixelXCommand(Pixel pixel, int newX)
+		{
+			this.pixel = pixel;
+			this.newX = newX;
+		}
+		
+		@Override
+		public final void execute()
+		{
+			oldX = pixel.getX();
+			pixel.setX(newX, false);
+		}
+
+		@Override
+		public final void undo()
+		{
+			pixel.setX(oldX, false);
+		}
+	}
+	
+	private final class PixelYCommand implements ICommand
+	{
+		private final Pixel pixel;
+		private final int newY;
+		private int oldY;
+		
+		public PixelYCommand(Pixel pixel, int newY)
+		{
+			this.pixel = pixel;
+			this.newY = newY;
+		}
+		
+		@Override
+		public final void execute()
+		{
+			oldY = pixel.getY();
+			pixel.setY(newY, false);
+		}
+
+		@Override
+		public final void undo()
+		{
+			pixel.setY(oldY, false);
+		}
+	}
+	
+	private final class PixelLayerCommand implements ICommand
+	{
+		private final Pixel pixel;
+		private final Layer newLayer;
+		private Layer oldLayer;
+		
+		public PixelLayerCommand(Pixel pixel, Layer newLayer)
+		{
+			this.pixel = pixel;
+			this.newLayer = newLayer;
+		}
+		
+		@Override
+		public final void execute()
+		{
+			oldLayer = pixel.getLayer();
+			pixel.setLayer(newLayer, false);
+		}
+
+		@Override
+		public final void undo()
+		{
+			pixel.setLayer(oldLayer, false);
+		}
+	}
+	
+	private final class PixelBrightnessFactorCommand implements ICommand
+	{
+		private final Pixel pixel;
+		private final double newBrightnessFactor;
+		private double oldBrightnessFactor;
+		
+		public PixelBrightnessFactorCommand(Pixel pixel, double newBrightnessFactor)
+		{
+			this.pixel = pixel;
+			this.newBrightnessFactor = newBrightnessFactor;
+		}
+		
+		@Override
+		public final void execute()
+		{
+			oldBrightnessFactor = pixel.getBrightnessFactor();
+			pixel.setBrightnessFactor(newBrightnessFactor, false);
+		}
+
+		@Override
+		public final void undo()
+		{
+			pixel.setBrightnessFactor(oldBrightnessFactor, false);
+		}
 	}
 }

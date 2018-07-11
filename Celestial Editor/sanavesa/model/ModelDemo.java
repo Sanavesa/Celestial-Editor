@@ -3,6 +3,7 @@ package sanavesa.model;
 import java.util.Arrays;
 
 import javafx.scene.paint.Color;
+import sanavesa.model.versionControl.VersionControl;
 
 public class ModelDemo
 {
@@ -110,11 +111,35 @@ public class ModelDemo
 		Frame frame = new Frame(true);
 		setupFrameListeners(frame);
 		
-		
 		Layer layer = new Layer("Untitled Layer", Color.RED, true, 0);
 		setupLayerListeners(layer);
 		
 		Pixel pixel = new Pixel(0, 0, layer, 0);
 		setupPixelListeners(pixel);
+		
+		project.setName("Project Awesome");
+		
+		System.out.println("Add (0,0)");
+		frame.addPixel(pixel);
+		System.out.println("Add (1,2) and (3, 4)");
+		frame.addPixels(
+				new Pixel(1, 2, layer, 0),
+				new Pixel(3, 4, layer, 0));
+		System.out.println("Add (9,7)");
+		frame.addPixel(new Pixel(9, 7, layer, 0));
+		System.out.println("Remove (0, 0");
+		frame.removePixel(pixel);
+		
+		while(VersionControl.getInstance().undoCount() > 0)
+		{
+			VersionControl.getInstance().undo();
+			System.out.println("Undo Frame Pixels: " + Arrays.toString(frame.getPixels().toArray()));
+		}
+		
+		while(VersionControl.getInstance().redoCount() > 0)
+		{
+			VersionControl.getInstance().redo();
+			System.out.println("Redo Frame Pixels: " + Arrays.toString(frame.getPixels().toArray()));
+		}
 	}
 }

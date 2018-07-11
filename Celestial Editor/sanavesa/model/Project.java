@@ -2,6 +2,8 @@ package sanavesa.model;
 
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import sanavesa.model.versionControl.ICommand;
+import sanavesa.model.versionControl.VersionControl;
 
 public final class Project
 {
@@ -11,6 +13,8 @@ public final class Project
 	
 	public Project(String name)
 	{
+		if(name == null)
+			throw new IllegalArgumentException("name cannot be null");
 		this.name = new ReadOnlyStringWrapper(name);
 		layerManager = new LayerManager();
 		frameManager = new FrameManager();
@@ -23,7 +27,23 @@ public final class Project
 	
 	public final void setName(String newName)
 	{
-		name.set(newName);
+		setName(newName, true);
+	}
+	
+	public final void setName(String newName, boolean isUndoable)
+	{
+		if(newName == null)
+			throw new IllegalArgumentException("newName cannot be null");
+		
+		if(isUndoable)
+		{
+			ProjectNameCommand command = new ProjectNameCommand(this, newName);
+			VersionControl.getInstance().executeCommand(command);
+		}
+		else
+		{
+			name.set(newName);
+		}
 	}
 	
 	public final ReadOnlyStringProperty nameProperty()
@@ -39,5 +59,31 @@ public final class Project
 	public final FrameManager getFrameManager()
 	{
 		return frameManager;
+	}
+	
+	private final class ProjectNameCommand implements ICommand
+	{
+		private final Project project;
+		private final String newName;
+		private String oldName;
+		
+		public ProjectNameCommand(Project project, String newName)
+		{
+			this.project = project;
+			this.newName = newName;
+		}
+		
+		@Override
+		public final void execute()
+		{
+			oldName = project.getName();
+			project.setName(newName, false);
+		}
+
+		@Override
+		public final void undo()
+		{
+			project.setName(oldName, false);
+		}
 	}
 }
