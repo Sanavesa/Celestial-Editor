@@ -1,4 +1,4 @@
-package sanavesa.model;
+package sanavesa.model.versionControl;
 
 import java.util.Stack;
 
@@ -32,10 +32,10 @@ public class VersionControl
 		return redoCommands.size();
 	}
 	
-	public void addCommand(ICommand command)
-	{
-		undoCommands.add(command);
-	}
+//	public void addCommand(ICommand command)
+//	{
+//		undoCommands.add(command);
+//	}
 	
 	public void executeCommand(ICommand command)
 	{
@@ -61,5 +61,15 @@ public class VersionControl
 			command.undo();
 			redoCommands.push(command);
 		}
+	}
+	
+	public void clearUndos()
+	{
+		undoCommands.clear();
+	}
+	
+	public void clearRedos()
+	{
+		redoCommands.clear();
 	}
 }

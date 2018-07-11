@@ -1,4 +1,4 @@
-package sanavesa.model;
+package sanavesa.model.versionControl;
 
 public interface ICommand
 {
