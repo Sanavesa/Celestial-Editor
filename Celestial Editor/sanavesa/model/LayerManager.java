@@ -14,27 +14,27 @@ public final class LayerManager
 	private final ReadOnlyIntegerWrapper selectedLayerIndex;
 	private final ReadOnlyListWrapper<Layer> layers;
 	private final ObservableList<Layer> unmodifiableLayers;
-	
+
 	public LayerManager()
 	{
 		selectedLayerIndex = new ReadOnlyIntegerWrapper(0);
 		layers = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
 		unmodifiableLayers = FXCollections.unmodifiableObservableList(layers.get());
 	}
-	
+
 	public final int getSelectedLayerIndex()
 	{
 		return selectedLayerIndex.get();
 	}
-	
-	public final void setSelectedLayerIndex(int newIndex)
+
+	public final void setSelectedLayerIndex(final int newIndex)
 	{
 		setSelectedLayerIndex(newIndex, true);
 	}
-	
-	public final void setSelectedLayerIndex(int newIndex, boolean isUndoable)
+
+	public final void setSelectedLayerIndex(final int newIndex, final boolean isUndoable)
 	{
-		if(isUndoable)
+		if (isUndoable)
 		{
 			LayerManagerSelectedIndexCommand command = new LayerManagerSelectedIndexCommand(this, newIndex);
 			VersionControl.getInstance().executeCommand(command);
@@ -44,28 +44,28 @@ public final class LayerManager
 			selectedLayerIndex.set(newIndex);
 		}
 	}
-	
+
 	public final ReadOnlyIntegerProperty selectedLayerIndexProperty()
 	{
 		return selectedLayerIndex.getReadOnlyProperty();
 	}
-	
+
 	public final ObservableList<Layer> getLayers()
 	{
 		return unmodifiableLayers;
 	}
-	
-	public final void setLayers(ObservableList<Layer> newLayers)
+
+	public final void setLayers(final ObservableList<Layer> newLayers)
 	{
 		setLayers(newLayers, true);
 	}
-	
-	public final void setLayers(ObservableList<Layer> newLayers, boolean isUndoable)
+
+	public final void setLayers(final ObservableList<Layer> newLayers, final boolean isUndoable)
 	{
-		if(newLayers == null)
+		if (newLayers == null)
 			throw new IllegalArgumentException("newLayers cannot be null");
-		
-		if(isUndoable)
+
+		if (isUndoable)
 		{
 			LayerManagerLayersCommand command = new LayerManagerLayersCommand(this, newLayers);
 			VersionControl.getInstance().executeCommand(command);
@@ -75,42 +75,66 @@ public final class LayerManager
 			layers.set(newLayers);
 		}
 	}
-	
+
 	public final ReadOnlyListProperty<Layer> layersProperty()
 	{
 		return layers.getReadOnlyProperty();
 	}
-	
-	public final void addLayer(Layer layer)
+
+	public final void addLayer(final Layer layer)
 	{
-		if(layer == null)
-			throw new IllegalArgumentException("layer cannot be null");
-		
-		LayerManagerLayerAddCommand command = new LayerManagerLayerAddCommand(this, layer);
-		VersionControl.getInstance().executeCommand(command);
+		addLayer(layer, true);
 	}
-	
-	public final void removeLayer(Layer layer)
+
+	public final void addLayer(final Layer layer, final boolean isUndoable)
 	{
-		if(layer == null)
+		if (layer == null)
 			throw new IllegalArgumentException("layer cannot be null");
-		
-		LayerManagerLayerRemoveCommand command = new LayerManagerLayerRemoveCommand(this, layer);
-		VersionControl.getInstance().executeCommand(command);
+
+		if (isUndoable)
+		{
+			LayerManagerLayerAddCommand command = new LayerManagerLayerAddCommand(this, layer);
+			VersionControl.getInstance().executeCommand(command);
+		}
+		else
+		{
+			layers.add(layer);
+		}
 	}
-	
+
+	public final void removeLayer(final Layer layer)
+	{
+		removeLayer(layer, true);
+	}
+
+	public final void removeLayer(final Layer layer, final boolean isUndoable)
+	{
+		if (layer == null)
+			throw new IllegalArgumentException("layer cannot be null");
+
+		if (isUndoable)
+		{
+			LayerManagerLayerRemoveCommand command = new LayerManagerLayerRemoveCommand(this, layer);
+			VersionControl.getInstance().executeCommand(command);
+		}
+		else
+		{
+			layers.remove(layer);
+		}
+	}
+
 	private final class LayerManagerSelectedIndexCommand implements ICommand
 	{
 		private final LayerManager layerManager;
 		private final int newIndex;
 		private int oldIndex;
-		
-		public LayerManagerSelectedIndexCommand(LayerManager layerManager, int newIndex)
+
+		public LayerManagerSelectedIndexCommand(final LayerManager layerManager, final int newIndex)
 		{
 			this.layerManager = layerManager;
 			this.newIndex = newIndex;
 		}
-		
+
 		@Override
 		public final void execute()
 		{
@@ -124,14 +148,14 @@ public final class LayerManager
 			layerManager.setSelectedLayerIndex(oldIndex, false);
 		}
 	}
-	
+
 	private final class LayerManagerLayersCommand implements ICommand
 	{
 		private final LayerManager layerManager;
 		private final ObservableList<Layer> newLayers;
 		private ObservableList<Layer> oldLayers;
-		
-		public LayerManagerLayersCommand(LayerManager layerManager, ObservableList<Layer> newLayers)
+
+		public LayerManagerLayersCommand(final LayerManager layerManager, final ObservableList<Layer> newLayers)
 		{
 			this.layerManager = layerManager;
 			this.newLayers = newLayers;
@@ -150,18 +174,18 @@ public final class LayerManager
 			layerManager.setLayers(oldLayers, false);
 		}
 	}
-	
+
 	private final class LayerManagerLayerAddCommand implements ICommand
 	{
 		private final LayerManager layerManager;
 		private final Layer layer;
-		
-		public LayerManagerLayerAddCommand(LayerManager layerManager, Layer layer)
+
+		public LayerManagerLayerAddCommand(final LayerManager layerManager, final Layer layer)
 		{
 			this.layerManager = layerManager;
 			this.layer = layer;
 		}
-		
+
 		@Override
 		public final void execute()
 		{
@@ -174,18 +198,18 @@ public final class LayerManager
 			layerManager.layers.remove(layer);
 		}
 	}
-	
+
 	private final class LayerManagerLayerRemoveCommand implements ICommand
 	{
 		private final LayerManager layerManager;
 		private final Layer layer;
-		
-		public LayerManagerLayerRemoveCommand(LayerManager layerManager, Layer layer)
+
+		public LayerManagerLayerRemoveCommand(final LayerManager layerManager, final Layer layer)
 		{
 			this.layerManager = layerManager;
 			this.layer = layer;
 		}
-		
+
 		@Override
 		public final void execute()
 		{

@@ -2,11 +2,11 @@ package sanavesa.model.versionControl;
 
 import java.util.Stack;
 
-public class VersionControl
+public final class VersionControl
 {
 	private static VersionControl instance = null;
-	private Stack<ICommand> undoCommands;
-	private Stack<ICommand> redoCommands;
+	private final Stack<ICommand> undoCommands;
+	private final Stack<ICommand> redoCommands;
 	
 	private VersionControl()
 	{
@@ -14,7 +14,7 @@ public class VersionControl
 		redoCommands = new Stack<>();
 	}
 	
-	public static VersionControl getInstance()
+	public final static VersionControl getInstance()
 	{
 		if(instance == null)
 			instance = new VersionControl();
@@ -22,28 +22,23 @@ public class VersionControl
 		return instance;
 	}
 	
-	public int undoCount()
+	public final int undoCount()
 	{
 		return undoCommands.size();
 	}
 	
-	public int redoCount()
+	public final int redoCount()
 	{
 		return redoCommands.size();
 	}
 	
-//	public void addCommand(ICommand command)
-//	{
-//		undoCommands.add(command);
-//	}
-	
-	public void executeCommand(ICommand command)
+	public final void executeCommand(final ICommand command)
 	{
 		undoCommands.add(command);
 		command.execute();
 	}
 	
-	public void redo()
+	public final void redo()
 	{
 		if(!redoCommands.isEmpty())
 		{
@@ -53,7 +48,7 @@ public class VersionControl
 		}
 	}
 	
-	public void undo()
+	public final void undo()
 	{
 		if(!undoCommands.isEmpty())
 		{
@@ -63,12 +58,12 @@ public class VersionControl
 		}
 	}
 	
-	public void clearUndos()
+	public final void clearUndos()
 	{
 		undoCommands.clear();
 	}
 	
-	public void clearRedos()
+	public final void clearRedos()
 	{
 		redoCommands.clear();
 	}
