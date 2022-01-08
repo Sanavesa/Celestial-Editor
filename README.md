@@ -1,6 +1,10 @@
 # Celestial Editor
 There are many image editors and animators out there. Yet, there is a lack of image editors that handle pixel art well. Consequently, pixel artists use image editors that weren’t built for making pixel art, wasting hours on workarounds and unwanted behavior. What I hope to create is a specialized pixel image editor with animation capabilities that speeds up the workflow of artists, allowing them to have a higher sprite throughput. Not only that, but novice artists like me can have a friendly introduction to the pixel art world. Using the right tool for the job will definitely speed up the process; you don’t use a knife to hammer a nail – do you?
 
+
+https://user-images.githubusercontent.com/31108136/148659209-407b6182-4a48-40fa-9dfb-afe6064f3ad1.mp4
+
+
 ## Main Features
 
 ### Color Palette
